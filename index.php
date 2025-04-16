@@ -1,0 +1,217 @@
+<?php
+require_once 'config.php';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KODOMTOLA BAZAR OUTLET Daily Records</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>KODOMTOLA BAZAR OUTLET Daily Records</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab('entry')">Today's Entry</button>
+            <button class="tab" onclick="openTab('history')">View Records</button>
+        </div>
+        
+        <div id="entry" class="tab-content active">
+            <form id="dataForm" action="save_data.php" method="post">
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" required 
+                           value="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <h3>Account Information</h3>
+                <div class="data-grid">
+                    <div class="form-group">
+                        <label for="totalAccount">TOTAL ACCOUNT:</label>
+                        <input type="number" id="totalAccount" name="totalAccount" value="02" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sb">SB:</label>
+                        <input type="number" id="sb" name="sb" value="02" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student">Student:</label>
+                        <input type="number" id="student" name="student" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cd">CD:</label>
+                        <input type="number" id="cd" name="cd" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dps">DPS:</label>
+                        <input type="number" id="dps" name="dps" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fdr">FDR:</label>
+                        <input type="number" id="fdr" name="fdr" value="00" required>
+                    </div>
+                </div>
+                
+                <h3>Transaction Information</h3>
+                <div class="data-grid">
+                    <div class="form-group">
+                        <label for="remittance">REMITTANCE:</label>
+                        <input type="number" id="remittance" name="remittance" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="chequeBook">CHEQUE BOOK:</label>
+                        <input type="number" id="chequeBook" name="chequeBook" value="02" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="card">CARD:</label>
+                        <input type="number" id="card" name="card" value="02" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rtgs">RTGS:</label>
+                        <input type="number" id="rtgs" name="rtgs" value="02" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eft">EFT:</label>
+                        <input type="number" id="eft" name="eft" value="00" required>
+                    </div>
+                </div>
+                
+                <h3>Financial Summary</h3>
+                <div class="data-grid">
+                    <div class="form-group">
+                        <label for="totalDeposit">Total Deposit (৳):</label>
+                        <input type="number" id="totalDeposit" name="totalDeposit" value="206300" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalWithdraw">Total Withdraw (৳):</label>
+                        <input type="number" id="totalWithdraw" name="totalWithdraw" value="78300" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="handCash">HAND CASH (৳):</label>
+                        <input type="number" id="handCash" name="handCash" value="66052" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="motherBalance">MOTHER Balance (৳):</label>
+                        <input type="number" step="0.01" id="motherBalance" name="motherBalance" value="593952.51" required>
+                    </div>
+                </div>
+                
+                <h3>Close Information</h3>
+                <div class="data-grid">
+                    <div class="form-group">
+                        <label for="dpsClose">DPS Close:</label>
+                        <input type="number" id="dpsClose" name="dpsClose" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fdrClose">FDR CLOSE:</label>
+                        <input type="number" id="fdrClose" name="fdrClose" value="00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalCloseAccount">Total close account:</label>
+                        <input type="number" id="totalCloseAccount" name="totalCloseAccount" value="00" required>
+                    </div>
+                </div>
+                
+                <button type="submit">Save Daily Data</button>
+            </form>
+        </div>
+        
+        <div id="history" class="tab-content">
+            <h2>Previous Records</h2>
+            <div id="entriesList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load entries when history tab is opened
+        function openTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // Remove active class from all tabs
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            // Show the current tab and add active class
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // Load entries if history tab is opened
+            if (tabName === 'history') {
+                fetchEntries();
+            }
+        }
+        
+        // Fetch entries from server
+        function fetchEntries() {
+            fetch('get_data.php')
+                .then(response => response.json())
+                .then(data => displayEntries(data))
+                .catch(error => console.error('Error:', error));
+        }
+        
+        // Display entries
+        function displayEntries(entries) {
+            const entriesList = document.getElementById('entriesList');
+            entriesList.innerHTML = '';
+            
+            if (entries.length === 0) {
+                entriesList.innerHTML = '<p>No records found.</p>';
+                return;
+            }
+            
+            // Sort by date (newest first)
+            entries.sort((a, b) => new Date(b.entry_date) - new Date(a.entry_date));
+            
+            entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+                
+                entryDiv.innerHTML = `
+                    <h3>${entry.outlet_name} - ${formatDate(entry.entry_date)}</h3>
+                    <div class="data-grid">
+                        <div class="data-item"><span>TOTAL ACCOUNT:</span> <span>${entry.total_account}</span></div>
+                        <div class="data-item"><span>SB:</span> <span>${entry.sb}</span></div>
+                        <div class="data-item"><span>Student:</span> <span>${entry.student}</span></div>
+                        <div class="data-item"><span>CD:</span> <span>${entry.cd}</span></div>
+                        <div class="data-item"><span>DPS:</span> <span>${entry.dps}</span></div>
+                        <div class="data-item"><span>FDR:</span> <span>${entry.fdr}</span></div>
+                        <div class="data-item"><span>REMITTANCE:</span> <span>${entry.remittance}</span></div>
+                        <div class="data-item"><span>CHEQUE BOOK:</span> <span>${entry.cheque_book}</span></div>
+                        <div class="data-item"><span>CARD:</span> <span>${entry.card}</span></div>
+                        <div class="data-item"><span>RTGS:</span> <span>${entry.rtgs}</span></div>
+                        <div class="data-item"><span>EFT:</span> <span>${entry.eft}</span></div>
+                        <div class="data-item"><span>Total Deposit:</span> <span>৳${numberWithCommas(entry.total_deposit)}</span></div>
+                        <div class="data-item"><span>Total Withdraw:</span> <span>৳${numberWithCommas(entry.total_withdraw)}</span></div>
+                        <div class="data-item"><span>HAND CASH:</span> <span>৳${numberWithCommas(entry.hand_cash)}</span></div>
+                        <div class="data-item"><span>MOTHER Balance:</span> <span>৳${numberWithCommas(entry.mother_balance)}</span></div>
+                        <div class="data-item"><span>DPS Close:</span> <span>${entry.dps_close}</span></div>
+                        <div class="data-item"><span>FDR CLOSE:</span> <span>${entry.fdr_close}</span></div>
+                        <div class="data-item"><span>Total close account:</span> <span>${entry.total_close_account}</span></div>
+                    </div>
+                `;
+                
+                entriesList.appendChild(entryDiv);
+            });
+        }
+        
+        // Format date for display
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+        
+        // Add commas to numbers
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+    </script>
+</body>
+</html>
